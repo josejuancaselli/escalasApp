@@ -375,7 +375,7 @@ export default function App() {
           disabled={keyLetter === ''}
           aria-label="Alteración de la tonalidad: natural, sostenido o bemol"
         >
-          <option value={0}>♮</option>
+          <option value={0}></option>
           <option value={1}>♯</option>
           <option value={-1}>♭</option>
         </select>
