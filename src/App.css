@@ -1,0 +1,142 @@
+:root {
+  --text-primary: #1f1e1d;
+  --text-secondary: #5f5e5a;
+  --border: rgba(31, 30, 29, 0.15);
+  --border-strong: rgba(31, 30, 29, 0.35);
+  --bg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f1efe8;
+    --text-secondary: #b4b2a9;
+    --border: rgba(241, 239, 232, 0.16);
+    --border-strong: rgba(241, 239, 232, 0.35);
+    --bg: #262624;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.app {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 500;
+  min-height: 28px;
+  margin: 0 0 4px;
+}
+
+/* Tablero */
+.board {
+  display: block;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.board.narrow {
+  max-width: 400px;
+  margin: 0 auto;
+}
+.board.dragging,
+.board.dragging .tok {
+  cursor: grabbing;
+}
+
+.frame {
+  fill: none;
+  stroke: var(--border-strong);
+}
+.divider {
+  stroke: var(--border);
+}
+.band {
+  fill: #b4b2a9;
+  fill-opacity: 0.45;
+}
+.tray {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-dasharray: 4 4;
+}
+.rail {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.hole {
+  fill: var(--text-primary);
+  fill-opacity: 0.65;
+}
+.hole.hl {
+  stroke: #378add;
+  stroke-width: 2.5;
+}
+
+/* Fichas */
+.tok.movable {
+  cursor: grab;
+  touch-action: none;
+}
+.tok text {
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: 500;
+  fill: #fff;
+  pointer-events: none;
+}
+
+/* Controles */
+.controls {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.controls button,
+.controls select {
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+.controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.controls button:hover {
+  background: var(--border);
+}
+.controls select {
+  background: var(--bg);
+  padding: 4px 6px;
+}
