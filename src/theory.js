@@ -64,34 +64,18 @@ export function scaleTitle(cols) {
 
 // Cifrados para leer las notas: id y texto que se ve en el selector
 export const NOTATIONS = [
-  ['solfeo', 'Do Re Mi'],
-  ['americano', 'C D E'],
+  ['americano', 'Americano'],
+  ['tradicional', 'Tradicional'],
 ]
 const NAMES = {
-  solfeo: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'],
   americano: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+  tradicional: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'],
 }
 const LETTER_PC = [0, 2, 4, 5, 7, 9, 11]
 const MAJOR = [0, 2, 4, 5, 7, 9, 11, 12]
 
-// Tonalidades mayores: letra (índice 0 a 6, empezando en Do) y alteración de la tónica
-export const KEYS = [
-  { letter: 0, acc: -1 }, // Do♭
-  { letter: 4, acc: -1 }, // Sol♭
-  { letter: 1, acc: -1 }, // Re♭
-  { letter: 5, acc: -1 }, // La♭
-  { letter: 2, acc: -1 }, // Mi♭
-  { letter: 6, acc: -1 }, // Si♭
-  { letter: 3, acc: 0 }, // Fa
-  { letter: 0, acc: 0 }, // Do
-  { letter: 4, acc: 0 }, // Sol
-  { letter: 1, acc: 0 }, // Re
-  { letter: 5, acc: 0 }, // La
-  { letter: 2, acc: 0 }, // Mi
-  { letter: 6, acc: 0 }, // Si
-  { letter: 3, acc: 1 }, // Fa♯
-  { letter: 0, acc: 1 }, // Do♯
-]
+// La tonalidad es una letra (0 a 6, empezando en Do) más una alteración (0, 1 sostenido, -1 bemol)
+export const letterName = (letter, notation) => NAMES[notation][letter]
 
 // Grado de cada hueco natural (0 a 7) y, para los de alteración, su hueco natural y desplazamiento
 const DEGREE = {}
@@ -111,9 +95,6 @@ const accidental = (a) =>
 
 // Escribe una nota (letra 0 a 6 + alteración) en el cifrado elegido
 const spell = (letter, acc, notation) => NAMES[notation][letter] + accidental(acc)
-
-// Texto de una tonalidad para el selector, por ejemplo "Mi mayor" o "E mayor"
-export const keyLabel = (key, notation) => spell(key.letter, key.acc, notation) + ' mayor'
 
 // Nombre de la nota que corresponde a un hueco, o '' si no hay tonalidad o hueco
 export function noteName(key, id, notation) {

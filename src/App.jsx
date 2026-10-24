@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { HOLES, RAILS, INIT, KEYS, NOTATIONS, noteName, keyLabel, scaleTitle, freq } from './theory.js'
+import { HOLES, RAILS, INIT, NOTATIONS, noteName, letterName, scaleTitle, freq } from './theory.js'
 import './App.css'
 
 const PORTRAIT = '(orientation: portrait)'
@@ -77,19 +77,22 @@ export default function App() {
 
   const [board, setBoard] = useState(startBoard)
   const [drag, setDrag] = useState(null) // { k, x, y, mode, sel, slides, opts }
-  const [keyIdx, setKeyIdx] = useState('')
-  const [notation, setNotation] = useState('solfeo') // cifrado para leer las notas
+  const [keyLetter, setKeyLetter] = useState('') // '' = sin tonalidad, o 0 a 6 (Do a Si)
+  const [keyAcc, setKeyAcc] = useState(0) // 0 natural, 1 sostenido, -1 bemol
+  const [notation, setNotation] = useState('') // '' = "Cifrado" sin elegir: se lee como tradicional (Do Re Mi)
   const [lit, setLit] = useState(null) // columna que suena durante Play
 
   const svgRef = useRef(null)
   const selRef = useRef(null)
+  const accRef = useRef(null)
   const notRef = useRef(null)
   const ac = useRef(null)
   const busy = useRef(false)
   const timers = useRef([])
 
   const { holes, pile } = board
-  const key = keyIdx === '' ? null : KEYS[+keyIdx]
+  const key = keyLetter === '' ? null : { letter: +keyLetter, acc: keyAcc }
+  const system = notation || 'tradicional'
   const occupied = new Set(holes.filter(Boolean))
   const title = scaleTitle(holes.filter(Boolean).map((h) => HOLES[h].col))
 
@@ -244,8 +247,9 @@ export default function App() {
   // Los selectores se ajustan al texto elegido (cambia con la tonalidad y con el cifrado)
   useLayoutEffect(() => {
     fitSelect(selRef.current)
+    fitSelect(accRef.current)
     fitSelect(notRef.current)
-  }, [keyIdx, notation])
+  }, [keyLetter, keyAcc, notation])
 
   // ---- Dibujo ----
   const dk = drag ? drag.k : null
@@ -261,9 +265,9 @@ export default function App() {
   }
   const labelOf = (k) => {
     if (drag && drag.k === k && drag.mode) {
-      return noteName(key, drag.sel.s / drag.sel.L > 0.5 ? drag.sel.to : holes[k], notation)
+      return noteName(key, drag.sel.s / drag.sel.L > 0.5 ? drag.sel.to : holes[k], system)
     }
-    return noteName(key, holes[k], notation)
+    return noteName(key, holes[k], system)
   }
   const cuts = Array.from({ length: 12 }, (_, i) => i + 1)
 
@@ -353,16 +357,27 @@ export default function App() {
         </button>
         <select
           ref={selRef}
-          value={keyIdx}
-          onChange={(e) => setKeyIdx(e.target.value)}
+          value={keyLetter}
+          onChange={(e) => setKeyLetter(e.target.value)}
           aria-label="Tonalidad: nombres de las notas en las fichas"
         >
           <option value="">Tonalidad</option>
-          {KEYS.map((k, i) => (
-            <option key={i} value={i}>
-              {keyLabel(k, notation)}
+          {[0, 1, 2, 3, 4, 5, 6].map((l) => (
+            <option key={l} value={l}>
+              {letterName(l, system)}
             </option>
           ))}
+        </select>
+        <select
+          ref={accRef}
+          value={keyAcc}
+          onChange={(e) => setKeyAcc(+e.target.value)}
+          disabled={keyLetter === ''}
+          aria-label="Alteración de la tonalidad: natural, sostenido o bemol"
+        >
+          <option value={0}>♮</option>
+          <option value={1}>♯</option>
+          <option value={-1}>♭</option>
         </select>
         <select
           ref={notRef}
@@ -370,6 +385,7 @@ export default function App() {
           onChange={(e) => setNotation(e.target.value)}
           aria-label="Cifrado de las notas"
         >
+          <option value="">Cifrado</option>
           {NOTATIONS.map(([id, text]) => (
             <option key={id} value={id}>
               {text}
