@@ -36,29 +36,71 @@ body {
   white-space: nowrap;
 }
 
+/* ---- Distribución: título, tablero y controles ---- */
 .app {
   max-width: 680px;
   margin: 0 auto;
   padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+/* Celular parado: título arriba, tablero vertical en el medio, botones abajo (al alcance del pulgar) */
+.app.portrait {
+  max-width: 440px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'title' 'board' 'controls';
+}
+
+/* Celular acostado o pantalla ancha: una barra arriba (título a la izquierda, botones a la derecha) y el tablero abajo */
+.app.landscape {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'title controls' 'board board';
+  align-items: center;
+}
+
+/* Celular acostado: hay poca altura, se achican los márgenes */
+@media (max-height: 500px) {
+  .app {
+    padding: 8px 12px;
+    gap: 4px;
+  }
 }
 
 .title {
+  grid-area: title;
   font-size: 18px;
   font-weight: 500;
   min-height: 28px;
-  margin: 0 0 4px;
+  margin: 0;
 }
 
-/* Tablero */
+/* ---- Tablero ---- */
 .board {
+  grid-area: board;
   display: block;
   width: 100%;
+  height: auto;
+  margin: 0 auto;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
-.board.narrow {
-  max-width: 400px;
-  margin: 0 auto;
+/* El tablero se achica solo si no entra en la altura de la pantalla (100dvh = alto visible real en el celular) */
+.portrait .board {
+  max-height: calc(100vh - 140px);
+  max-height: calc(100dvh - 140px);
+}
+.landscape .board {
+  max-height: calc(100vh - 90px);
+  max-height: calc(100dvh - 90px);
+}
+/* Celular acostado: márgenes más chicos, así que el tablero puede ser un poco más alto */
+@media (max-height: 500px) {
+  .landscape .board {
+    max-height: calc(100vh - 70px);
+    max-height: calc(100dvh - 70px);
+  }
 }
 .board.dragging,
 .board.dragging .tok {
@@ -96,7 +138,7 @@ body {
   stroke-width: 2.5;
 }
 
-/* Fichas */
+/* ---- Fichas ---- */
 .tok.movable {
   cursor: grab;
   touch-action: none;
@@ -109,13 +151,20 @@ body {
   pointer-events: none;
 }
 
-/* Controles */
+/* ---- Controles ---- */
 .controls {
-  margin-top: 8px;
+  grid-area: controls;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
+}
+.portrait .controls {
+  justify-content: center;
+}
+.landscape .controls {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 .controls button,
 .controls select {
@@ -132,6 +181,7 @@ body {
   gap: 6px;
   padding: 6px 12px;
   cursor: pointer;
+  touch-action: manipulation;
 }
 .controls button:hover {
   background: var(--border);
@@ -139,4 +189,13 @@ body {
 .controls select {
   background: var(--bg);
   padding: 4px 6px;
+}
+
+/* Pantallas táctiles: botones más grandes; 16px evita que el iPhone haga zoom al abrir el selector */
+@media (pointer: coarse) {
+  .controls button,
+  .controls select {
+    min-height: 44px;
+    font-size: 16px;
+  }
 }

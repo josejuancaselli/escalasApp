@@ -2,21 +2,22 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { HOLES, RAILS, INIT, KEYS, noteName, scaleTitle, freq } from './theory.js'
 import './App.css'
 
-const NARROW = '(max-width: 539px)'
+const PORTRAIT = '(orientation: portrait)'
 const isFixed = (k) => k === 0 || k === INIT.length - 1 // primera y última ficha: fijas
 const startBoard = () => ({ holes: [...INIT], pile: [] }) // holes[k] = hueco de la ficha k (null si está en la pila)
 const COLORS = { fixed: '#185FA5', fixedLine: '#0C447C', normal: '#378ADD', line: '#185FA5', lit: '#85B7EB' }
 
-// true en pantallas angostas (celular): el tablero se dibuja vertical
-function useNarrow() {
-  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches)
+// true cuando la pantalla es más alta que ancha (celular parado): el tablero se dibuja vertical.
+// Se actualiza solo al girar el celular.
+function usePortrait() {
+  const [portrait, setPortrait] = useState(() => window.matchMedia(PORTRAIT).matches)
   useEffect(() => {
-    const m = window.matchMedia(NARROW)
-    const on = () => setNarrow(m.matches)
+    const m = window.matchMedia(PORTRAIT)
+    const on = () => setPortrait(m.matches)
     m.addEventListener('change', on)
     return () => m.removeEventListener('change', on)
   }, [])
-  return narrow
+  return portrait
 }
 
 // Medidas del dibujo según orientación. pos(columna, carril) -> punto; slot(i) -> lugar i de la pila
@@ -63,7 +64,7 @@ function PlayIcon() {
 }
 
 export default function App() {
-  const V = useNarrow()
+  const V = usePortrait() // V = vertical
   const L = makeLayout(V)
 
   const [board, setBoard] = useState(startBoard)
@@ -258,7 +259,7 @@ export default function App() {
   const cuts = Array.from({ length: 12 }, (_, i) => i + 1)
 
   return (
-    <main className="app">
+    <main className={'app ' + (V ? 'portrait' : 'landscape')}>
       <h1 className="sr-only">Tablero de escalas</h1>
       <div className="title" aria-live="polite">
         {title}
@@ -266,7 +267,7 @@ export default function App() {
 
       <svg
         ref={svgRef}
-        className={'board' + (V ? ' narrow' : '') + (drag ? ' dragging' : '')}
+        className={'board' + (drag ? ' dragging' : '')}
         viewBox={L.viewBox}
         aria-label="Tablero de escalas con fichas arrastrables y una pila para las fichas quitadas"
         onPointerMove={move}
