@@ -385,6 +385,7 @@ export default function App() {
         <select
           ref={notRef}
           value={notation}
+          style={{ width: 'min-content' }}
           onChange={(e) => setNotation(e.target.value)}
           aria-label="Cifrado de las notas"
         >

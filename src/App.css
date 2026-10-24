@@ -163,6 +163,7 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-right: auto;
 }
 /* Vertical: botones arriba, selectores abajo */
 .portrait .controls {
