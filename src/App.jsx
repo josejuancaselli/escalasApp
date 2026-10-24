@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { HOLES, RAILS, INIT, KEYS, noteName, scaleTitle, freq } from './theory.js'
+import { HOLES, RAILS, INIT, KEYS, NOTATIONS, noteName, keyLabel, scaleTitle, freq } from './theory.js'
 import './App.css'
 
 const PORTRAIT = '(orientation: portrait)'
@@ -55,6 +55,14 @@ function project(pts, p) {
   return { ...best, L: acc }
 }
 
+// Ajusta el ancho de un selector a lo que ocupa el texto elegido (más un margen para la flechita)
+function fitSelect(s) {
+  const c = document.createElement('canvas').getContext('2d')
+  const cs = getComputedStyle(s)
+  c.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
+  s.style.width = Math.ceil(c.measureText(s.options[s.selectedIndex].text).width + 34) + 'px'
+}
+
 function PlayIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
@@ -70,10 +78,12 @@ export default function App() {
   const [board, setBoard] = useState(startBoard)
   const [drag, setDrag] = useState(null) // { k, x, y, mode, sel, slides, opts }
   const [keyIdx, setKeyIdx] = useState('')
+  const [notation, setNotation] = useState('solfeo') // cifrado para leer las notas
   const [lit, setLit] = useState(null) // columna que suena durante Play
 
   const svgRef = useRef(null)
   const selRef = useRef(null)
+  const notRef = useRef(null)
   const ac = useRef(null)
   const busy = useRef(false)
   const timers = useRef([])
@@ -103,7 +113,7 @@ export default function App() {
     const g = c.createGain()
     const t = c.currentTime + when
     o.type = 'triangle'
-    o.frequency.value = freq(col)
+    o.frequency.value = freq(col, key)
     g.gain.setValueAtTime(0, t)
     g.gain.linearRampToValueAtTime(0.3, t + 0.02)
     g.gain.exponentialRampToValueAtTime(0.001, t + 1.2)
@@ -231,14 +241,11 @@ export default function App() {
   }
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
 
-  // El selector mide lo que ocupa el texto elegido y se ajusta a eso
+  // Los selectores se ajustan al texto elegido (cambia con la tonalidad y con el cifrado)
   useLayoutEffect(() => {
-    const s = selRef.current
-    const c = document.createElement('canvas').getContext('2d')
-    const cs = getComputedStyle(s)
-    c.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
-    s.style.width = Math.ceil(c.measureText(s.options[s.selectedIndex].text).width + 34) + 'px'
-  }, [keyIdx])
+    fitSelect(selRef.current)
+    fitSelect(notRef.current)
+  }, [keyIdx, notation])
 
   // ---- Dibujo ----
   const dk = drag ? drag.k : null
@@ -253,8 +260,10 @@ export default function App() {
     return holes[k] ? P[holes[k]] : L.slot(pile.indexOf(k))
   }
   const labelOf = (k) => {
-    if (drag && drag.k === k && drag.mode) return noteName(key, drag.sel.s / drag.sel.L > 0.5 ? drag.sel.to : holes[k])
-    return noteName(key, holes[k])
+    if (drag && drag.k === k && drag.mode) {
+      return noteName(key, drag.sel.s / drag.sel.L > 0.5 ? drag.sel.to : holes[k], notation)
+    }
+    return noteName(key, holes[k], notation)
   }
   const cuts = Array.from({ length: 12 }, (_, i) => i + 1)
 
@@ -308,6 +317,9 @@ export default function App() {
           const { x, y } = posOf(k)
           const fixed = isFixed(k)
           const on = holes[k] !== null && lit === HOLES[holes[k]].col
+          const label = labelOf(k)
+          // Los nombres largos (Sol♭♭, Solx) se escriben un poco más chicos para que entren en la ficha
+          const fontSize = (V ? 15 : 13) * (label.length >= 5 ? 0.75 : label.length === 4 ? 0.9 : 1)
           return (
             <g key={k} className={'tok ' + (fixed ? 'fixed' : 'movable')} onPointerDown={(e) => down(e, k)}>
               <rect
@@ -319,8 +331,8 @@ export default function App() {
                 fill={on ? COLORS.lit : fixed ? COLORS.fixed : COLORS.normal}
                 stroke={fixed ? COLORS.fixedLine : COLORS.line}
               />
-              <text x={x} y={y} fontSize={V ? 15 : 13}>
-                {labelOf(k)}
+              <text x={x} y={y} fontSize={fontSize}>
+                {label}
               </text>
             </g>
           )
@@ -347,8 +359,20 @@ export default function App() {
         >
           <option value="">Tonalidad</option>
           {KEYS.map((k, i) => (
-            <option key={k.label} value={i}>
-              {k.label} mayor
+            <option key={i} value={i}>
+              {keyLabel(k, notation)}
+            </option>
+          ))}
+        </select>
+        <select
+          ref={notRef}
+          value={notation}
+          onChange={(e) => setNotation(e.target.value)}
+          aria-label="Cifrado de las notas"
+        >
+          {NOTATIONS.map(([id, text]) => (
+            <option key={id} value={id}>
+              {text}
             </option>
           ))}
         </select>

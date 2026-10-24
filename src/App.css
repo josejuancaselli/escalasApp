@@ -88,8 +88,8 @@ body {
 }
 /* El tablero se achica solo si no entra en la altura de la pantalla (100dvh = alto visible real en el celular) */
 .portrait .board {
-  max-height: calc(100vh - 140px);
-  max-height: calc(100dvh - 140px);
+  max-height: calc(100vh - 190px); /* deja lugar para el título y hasta dos filas de controles */
+  max-height: calc(100dvh - 190px);
 }
 .landscape .board {
   max-height: calc(100vh - 90px);

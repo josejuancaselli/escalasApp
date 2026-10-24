@@ -62,27 +62,35 @@ export function scaleTitle(cols) {
 
 // ---- Nombres de notas (opcionales, según la tonalidad mayor elegida) ----
 
-const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+// Cifrados para leer las notas: id y texto que se ve en el selector
+export const NOTATIONS = [
+  ['solfeo', 'Do Re Mi'],
+  ['americano', 'C D E'],
+]
+const NAMES = {
+  solfeo: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'],
+  americano: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+}
 const LETTER_PC = [0, 2, 4, 5, 7, 9, 11]
 const MAJOR = [0, 2, 4, 5, 7, 9, 11, 12]
 
-// Tonalidades mayores: letra (índice en LETTERS) y alteración de la tónica
+// Tonalidades mayores: letra (índice 0 a 6, empezando en Do) y alteración de la tónica
 export const KEYS = [
-  { label: 'Do♭', letter: 0, acc: -1 },
-  { label: 'Sol♭', letter: 4, acc: -1 },
-  { label: 'Re♭', letter: 1, acc: -1 },
-  { label: 'La♭', letter: 5, acc: -1 },
-  { label: 'Mi♭', letter: 2, acc: -1 },
-  { label: 'Si♭', letter: 6, acc: -1 },
-  { label: 'Fa', letter: 3, acc: 0 },
-  { label: 'Do', letter: 0, acc: 0 },
-  { label: 'Sol', letter: 4, acc: 0 },
-  { label: 'Re', letter: 1, acc: 0 },
-  { label: 'La', letter: 5, acc: 0 },
-  { label: 'Mi', letter: 2, acc: 0 },
-  { label: 'Si', letter: 6, acc: 0 },
-  { label: 'Fa♯', letter: 3, acc: 1 },
-  { label: 'Do♯', letter: 0, acc: 1 },
+  { letter: 0, acc: -1 }, // Do♭
+  { letter: 4, acc: -1 }, // Sol♭
+  { letter: 1, acc: -1 }, // Re♭
+  { letter: 5, acc: -1 }, // La♭
+  { letter: 2, acc: -1 }, // Mi♭
+  { letter: 6, acc: -1 }, // Si♭
+  { letter: 3, acc: 0 }, // Fa
+  { letter: 0, acc: 0 }, // Do
+  { letter: 4, acc: 0 }, // Sol
+  { letter: 1, acc: 0 }, // Re
+  { letter: 5, acc: 0 }, // La
+  { letter: 2, acc: 0 }, // Mi
+  { letter: 6, acc: 0 }, // Si
+  { letter: 3, acc: 1 }, // Fa♯
+  { letter: 0, acc: 1 }, // Do♯
 ]
 
 // Grado de cada hueco natural (0 a 7) y, para los de alteración, su hueco natural y desplazamiento
@@ -101,8 +109,14 @@ RAILS.forEach(([n, a]) => {
 const accidental = (a) =>
   a === 0 ? '' : a === 1 ? '♯' : a === 2 ? 'x' : a === -1 ? '♭' : a === -2 ? '♭♭' : (a > 0 ? '♯' : '♭') + Math.abs(a)
 
+// Escribe una nota (letra 0 a 6 + alteración) en el cifrado elegido
+const spell = (letter, acc, notation) => NAMES[notation][letter] + accidental(acc)
+
+// Texto de una tonalidad para el selector, por ejemplo "Mi mayor" o "E mayor"
+export const keyLabel = (key, notation) => spell(key.letter, key.acc, notation) + ' mayor'
+
 // Nombre de la nota que corresponde a un hueco, o '' si no hay tonalidad o hueco
-export function noteName(key, id) {
+export function noteName(key, id, notation) {
   if (!key || !id) return ''
   const [parent, shift] = PARENT[id]
   const d = DEGREE[parent]
@@ -111,8 +125,18 @@ export function noteName(key, id) {
   const target = (rootPc + MAJOR[d]) % 12
   let a = (((target - LETTER_PC[li]) % 12) + 12) % 12
   if (a > 6) a -= 12
-  return LETTERS[li] + accidental(a + shift)
+  return spell(li, a + shift, notation)
 }
 
-// Frecuencia: la tónica (columna 0) siempre suena en un Do central
-export const freq = (col) => 261.63 * 2 ** (col / 12)
+// ---- Sonido ----
+
+// Cuántos semitonos está la tónica respecto del Do central (0 si no hay tonalidad).
+// Las tonalidades de Fa♯/Sol♭ en adelante (hasta Si) se toman por debajo del Do, así el sonido no se va demasiado agudo.
+export function tonicOffset(key) {
+  if (!key) return 0
+  const pc = (LETTER_PC[key.letter] + key.acc + 12) % 12
+  return pc >= 6 ? pc - 12 : pc
+}
+
+// Frecuencia de la nota de una columna: parte de la tónica de la tonalidad elegida (Do central por defecto)
+export const freq = (col, key) => 261.63 * 2 ** ((tonicOffset(key) + col) / 12)
