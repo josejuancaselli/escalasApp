@@ -159,12 +159,23 @@ body {
   flex-wrap: wrap;
   align-items: center;
 }
-.portrait .controls {
-  justify-content: center;
+.controls .row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
+/* Vertical: botones arriba, selectores abajo */
+.portrait .controls {
+  flex-direction: column;
+  align-items: center;
+}
+/* Horizontal: todo en una sola fila */
 .landscape .controls {
   justify-content: flex-end;
   flex-wrap: nowrap;
+}
+.landscape .controls .row {
+  display: contents;
 }
 .controls button,
 .controls select {

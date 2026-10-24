@@ -344,6 +344,7 @@ export default function App() {
       </svg>
 
       <div className="controls">
+        <div className="row">
         <button onClick={play}>
           <PlayIcon /> Play
         </button>
@@ -355,6 +356,8 @@ export default function App() {
         >
           Reiniciar
         </button>
+        </div>
+        <div className="row">
         <select
           ref={selRef}
           value={keyLetter}
@@ -375,7 +378,7 @@ export default function App() {
           disabled={keyLetter === ''}
           aria-label="Alteración de la tonalidad: natural, sostenido o bemol"
         >
-          <option value={0}></option>
+          <option value={0}>♮</option>
           <option value={1}>♯</option>
           <option value={-1}>♭</option>
         </select>
@@ -392,6 +395,7 @@ export default function App() {
             </option>
           ))}
         </select>
+        </div>
       </div>
     </main>
   )
