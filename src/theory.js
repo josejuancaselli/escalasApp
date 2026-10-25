@@ -51,6 +51,23 @@ const SCALES = [
   ['Escala de tonos enteros', [0, 2, 4, 6, 8, 10]],
   ['Escala disminuida (tono-semitono)', [0, 2, 3, 5, 6, 8, 9, 11]],
   ['Escala disminuida (semitono-tono)', [0, 1, 3, 4, 6, 7, 9, 10]],
+  // Escalas exóticas
+  ['Escala húngara menor', [0, 2, 3, 6, 7, 8, 11]],
+  ['Escala napolitana mayor', [0, 1, 3, 5, 7, 9, 11]],
+  ['Escala napolitana menor', [0, 1, 3, 5, 7, 8, 11]],
+  ['Escala persa', [0, 1, 4, 5, 6, 8, 11]],
+  ['Escala enigmática', [0, 1, 4, 6, 8, 10, 11]],
+  ['Escala de Prometeo', [0, 2, 4, 6, 9, 10]],
+  ['Escala armónica mayor', [0, 2, 4, 5, 7, 8, 11]],
+  ['Modo dórico ucraniano', [0, 2, 3, 6, 7, 9, 10]],
+  ['Modo lidio aumentado', [0, 2, 4, 6, 8, 9, 11]],
+  ['Escala alterada (superlocria)', [0, 1, 3, 4, 6, 8, 10]],
+  ['Modo locrio mayor', [0, 2, 4, 5, 6, 8, 10]],
+  ['Modo locrio con sexta natural', [0, 1, 3, 5, 6, 9, 10]],
+  ['Escala japonesa Hirajoshi', [0, 2, 3, 7, 8]],
+  ['Escala japonesa In', [0, 1, 5, 7, 8]],
+  ['Escala japonesa Insen', [0, 1, 5, 7, 10]],
+  ['Escala japonesa Iwato', [0, 1, 5, 6, 10]],
   ['Escala cromática', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]],
 ]
 
@@ -58,6 +75,25 @@ const SCALES = [
 export function scaleTitle(cols) {
   const key = [...new Set(cols.map((c) => c % 12))].sort((a, b) => a - b).join()
   return SCALES.find(([, steps]) => steps.join() === key)?.[0] ?? ''
+}
+
+// Escalas que se pueden armar solas en el tablero (hasta 7 notas distintas)
+export const BUILDABLE = SCALES.filter(([, steps]) => steps.length <= 7)
+
+// Hueco que se usa para cada columna al armar una escala (en las columnas negras: 1 abajo, 3 abajo, 6 arriba, 8 abajo, 10 abajo)
+const HOLE_OF_COL = { 1: 'b1', 3: 'b3', 6: 't6', 8: 'b8', 10: 'b10' }
+NAT.forEach((c) => {
+  HOLE_OF_COL[c] = 'n' + c
+})
+
+// Huecos de las 8 fichas para una escala: la primera en la tónica, la última en la octava,
+// las del medio en las demás notas (de grave a agudo) y las que sobran en la pila (null)
+export function scaleHoles(steps) {
+  const mid = steps.filter((s) => s !== 0).map((s) => HOLE_OF_COL[s])
+  const holes = ['n0', ...mid]
+  while (holes.length < INIT.length - 1) holes.push(null)
+  holes.push('n12')
+  return holes
 }
 
 // ---- Nombres de notas (opcionales, según la tonalidad mayor elegida) ----

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { HOLES, RAILS, INIT, NOTATIONS, noteName, letterName, scaleTitle, freq } from './theory.js'
+import { HOLES, RAILS, INIT, BUILDABLE, scaleHoles, NOTATIONS, noteName, letterName, scaleTitle, freq } from './theory.js'
 import './App.css'
 
 const PORTRAIT = '(orientation: portrait)'
@@ -85,6 +85,7 @@ export default function App() {
   const svgRef = useRef(null)
   const selRef = useRef(null)
   const accRef = useRef(null)
+  const scaRef = useRef(null)
   const notRef = useRef(null)
   const ac = useRef(null)
   const busy = useRef(false)
@@ -248,6 +249,7 @@ export default function App() {
   useLayoutEffect(() => {
     fitSelect(selRef.current)
     fitSelect(accRef.current)
+    fitSelect(scaRef.current)
     fitSelect(notRef.current)
   }, [keyLetter, keyAcc, notation])
 
@@ -363,6 +365,7 @@ export default function App() {
           value={keyLetter}
           onChange={(e) => setKeyLetter(e.target.value)}
           aria-label="Tonalidad: nombres de las notas en las fichas"
+          style={{ width: 'min-content' }}
         >
           <option value="">Tonalidad</option>
           {[0, 1, 2, 3, 4, 5, 6].map((l) => (
@@ -385,7 +388,6 @@ export default function App() {
         <select
           ref={notRef}
           value={notation}
-          style={{ width: 'min-content' }}
           onChange={(e) => setNotation(e.target.value)}
           aria-label="Cifrado de las notas"
         >
@@ -393,6 +395,23 @@ export default function App() {
           {NOTATIONS.map(([id, text]) => (
             <option key={id} value={id}>
               {text}
+            </option>
+          ))}
+        </select>
+        <select
+          ref={scaRef}
+          value=""
+          onChange={(e) => {
+            const holes = scaleHoles(BUILDABLE[+e.target.value][1])
+            setBoard({ holes, pile: holes.flatMap((h, i) => (h ? [] : [i])) })
+            setDrag(null)
+          }}
+          aria-label="Escalas: arma la escala elegida en el tablero"
+        >
+          <option value="">Escalas</option>
+          {BUILDABLE.map(([name], i) => (
+            <option key={i} value={i}>
+              {name}
             </option>
           ))}
         </select>
